@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================
-#  Prosperas MCP — Setup para Claude Code
-#  Instala el MCP server y la skill de consultas a base de datos
+#  Prosperas MCP — Setup automatico
+#  Configura el MCP server directamente en tus herramientas AI
 # =============================================================
 
 set -e
@@ -14,73 +14,107 @@ NC='\033[0m'
 BOLD='\033[1m'
 
 echo ""
-echo -e "${BLUE}${BOLD}=========================================${NC}"
-echo -e "${BLUE}${BOLD}  Prosperas MCP — Setup para Claude Code ${NC}"
-echo -e "${BLUE}${BOLD}=========================================${NC}"
+echo -e "${BLUE}${BOLD}=============================================${NC}"
+echo -e "${BLUE}${BOLD}  Prosperas MCP — Setup automatico           ${NC}"
+echo -e "${BLUE}${BOLD}=============================================${NC}"
 echo ""
 
-# --- Check Claude Code installed ---
-if ! command -v claude &> /dev/null; then
-    echo -e "${RED}Claude Code no esta instalado.${NC}"
-    echo "Instala primero: https://docs.anthropic.com/en/docs/claude-code"
+# --- Check Node.js installed (required for npx mcp-remote) ---
+if ! command -v node &> /dev/null; then
+    echo -e "${RED}Node.js no esta instalado.${NC}"
+    echo "Es necesario para conectar con el MCP server."
+    echo "Instala desde: https://nodejs.org"
     exit 1
 fi
 
-# --- API Key ---
-echo -e "${BOLD}1. API Key${NC}"
-echo "   (La obtuviste al generar una llave en el dashboard)"
-echo ""
-read -rp "   Pega tu API Key: " API_KEY
+# --- Support --args mode for pre-filled values from HTML wizard ---
+PRESET_COUNTRY=""
+PRESET_ENV=""
+PRESET_KEY=""
+PRESET_TOOLS=""
 
-if [ -z "$API_KEY" ]; then
-    echo -e "${RED}API Key es requerida.${NC}"
-    exit 1
-fi
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --country) PRESET_COUNTRY="$2"; shift 2 ;;
+        --env) PRESET_ENV="$2"; shift 2 ;;
+        --key) PRESET_KEY="$2"; shift 2 ;;
+        --tools) PRESET_TOOLS="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
 
 # --- Country ---
-echo ""
-echo -e "${BOLD}2. Pais${NC}"
-echo "   1) Colombia"
-echo "   2) Mexico"
-echo ""
-read -rp "   Selecciona (1 o 2): " COUNTRY_CHOICE
+if [ -n "$PRESET_COUNTRY" ]; then
+    COUNTRY_CHOICE="$PRESET_COUNTRY"
+else
+    echo -e "${BOLD}1. Pais${NC}"
+    echo "   1) Colombia"
+    echo "   2) Mexico"
+    echo ""
+    read -rp "   Selecciona (1 o 2): " COUNTRY_CHOICE
+fi
 
 case $COUNTRY_CHOICE in
-    1)
+    1|co)
         COUNTRY="co"
         COUNTRY_URL="col"
+        COUNTRY_LABEL="Colombia"
         ;;
-    2)
+    2|mx)
         COUNTRY="mx"
         COUNTRY_URL="mx"
+        COUNTRY_LABEL="Mexico"
         ;;
     *)
-        echo -e "${RED}Opcion invalida. Selecciona 1 o 2.${NC}"
+        echo -e "${RED}Opcion invalida para pais.${NC}"
         exit 1
         ;;
 esac
 
 # --- Environment ---
-echo ""
-echo -e "${BOLD}3. Ambiente${NC}"
-echo "   1) Produccion (recomendado)"
-echo "   2) Desarrollo"
-echo ""
-read -rp "   Selecciona (1 o 2) [default: 1]: " ENV_CHOICE
-ENV_CHOICE=${ENV_CHOICE:-1}
+if [ -n "$PRESET_ENV" ]; then
+    ENV_CHOICE="$PRESET_ENV"
+else
+    echo ""
+    echo -e "${BOLD}2. Ambiente${NC}"
+    echo "   1) Produccion (recomendado)"
+    echo "   2) Desarrollo"
+    echo ""
+    read -rp "   Selecciona (1 o 2) [default: 1]: " ENV_CHOICE
+    ENV_CHOICE=${ENV_CHOICE:-1}
+fi
 
 case $ENV_CHOICE in
-    1)
+    1|prod)
         STAGE="prod"
+        STAGE_LABEL="Produccion"
         ;;
-    2)
+    2|dev)
         STAGE="dev"
+        STAGE_LABEL="Desarrollo"
         ;;
     *)
-        echo -e "${RED}Opcion invalida.${NC}"
+        echo -e "${RED}Opcion invalida para ambiente.${NC}"
         exit 1
         ;;
 esac
+
+# --- API Key ---
+if [ -n "$PRESET_KEY" ]; then
+    API_KEY="$PRESET_KEY"
+else
+    echo ""
+    echo -e "${BOLD}3. API Key${NC}"
+    echo -e "   Pega la API Key de ${YELLOW}${COUNTRY_LABEL} - ${STAGE_LABEL}${NC}"
+    echo "   (La obtuviste al generar una llave en el dashboard)"
+    echo ""
+    read -rp "   API Key: " API_KEY
+fi
+
+if [ -z "$API_KEY" ]; then
+    echo -e "${RED}API Key es requerida.${NC}"
+    exit 1
+fi
 
 # --- Build config ---
 MCP_NAME="prosperas-mcp-${STAGE}-${COUNTRY}"
@@ -90,21 +124,144 @@ echo ""
 echo -e "${YELLOW}Configuracion:${NC}"
 echo "   Nombre:   $MCP_NAME"
 echo "   URL:      $MCP_URL"
+echo "   Pais:     $COUNTRY_LABEL"
+echo "   Ambiente: $STAGE_LABEL"
 echo ""
 
-# --- Step 1: Add MCP server to Claude Code ---
-echo -e "${BOLD}Agregando MCP server a Claude Code...${NC}"
-claude mcp add --transport http "$MCP_NAME" "$MCP_URL" --header "X-MCP-API-Key: ${API_KEY}"
-echo -e "${GREEN}MCP server agregado.${NC}"
+# --- Tool selection ---
+if [ -n "$PRESET_TOOLS" ]; then
+    TOOL_CHOICE="$PRESET_TOOLS"
+else
+    echo -e "${BOLD}4. Que herramientas quieres configurar?${NC}"
+    echo "   1) Claude Desktop (recomendado)"
+    echo "   2) Claude Code"
+    echo "   3) Cursor"
+    echo "   4) Todas"
+    echo ""
+    read -rp "   Selecciona (1, 2, 3 o 4) [default: 4]: " TOOL_CHOICE
+    TOOL_CHOICE=${TOOL_CHOICE:-4}
+fi
 
-# --- Step 2: Install skill ---
-echo ""
-echo -e "${BOLD}Instalando skill de consultas...${NC}"
+INSTALL_DESKTOP=false
+INSTALL_CLAUDE_CODE=false
+INSTALL_CURSOR=false
 
-SKILL_DIR="$HOME/.claude/skills"
-mkdir -p "$SKILL_DIR"
+# Handle comma-separated tools (e.g., "desktop,claude") from wizard
+IFS=',' read -ra TOOLS_ARRAY <<< "$TOOL_CHOICE"
+for tool in "${TOOLS_ARRAY[@]}"; do
+    case $tool in
+        1|desktop)    INSTALL_DESKTOP=true ;;
+        2|claude)     INSTALL_CLAUDE_CODE=true ;;
+        3|cursor)     INSTALL_CURSOR=true ;;
+        4|all)        INSTALL_DESKTOP=true; INSTALL_CLAUDE_CODE=true; INSTALL_CURSOR=true ;;
+        *)
+            echo -e "${RED}Opcion invalida: $tool${NC}"
+            exit 1
+            ;;
+    esac
+done
 
-cat > "$SKILL_DIR/prosperas-mcp.md" << 'SKILL_EOF'
+# =============================================================
+#  CONFIGURE CLAUDE DESKTOP
+# =============================================================
+if [ "$INSTALL_DESKTOP" = true ]; then
+    echo -e "${BOLD}Configurando Claude Desktop...${NC}"
+
+    CLAUDE_CONFIG_DIR="$HOME/Library/Application Support/Claude"
+    CLAUDE_CONFIG="$CLAUDE_CONFIG_DIR/claude_desktop_config.json"
+
+    mkdir -p "$CLAUDE_CONFIG_DIR"
+
+    node -e "
+const fs = require('fs');
+const configPath = process.argv[1];
+const mcpName = process.argv[2];
+const mcpUrl = process.argv[3];
+const apiKey = process.argv[4];
+
+let config = {};
+try { config = JSON.parse(fs.readFileSync(configPath, 'utf8')); } catch (e) {}
+
+if (!config.mcpServers) config.mcpServers = {};
+
+config.mcpServers[mcpName] = {
+    command: 'npx',
+    args: ['mcp-remote', mcpUrl, '--header', 'X-MCP-API-Key:' + apiKey]
+};
+
+fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+console.log('OK');
+" "$CLAUDE_CONFIG" "$MCP_NAME" "$MCP_URL" "$API_KEY"
+
+    echo -e "${GREEN}  Claude Desktop configurado.${NC}"
+    echo -e "  Config: ${CLAUDE_CONFIG}"
+    echo -e "  ${YELLOW}Reinicia Claude Desktop para activar los cambios.${NC}"
+    echo ""
+fi
+
+# =============================================================
+#  CONFIGURE CLAUDE CODE
+# =============================================================
+if [ "$INSTALL_CLAUDE_CODE" = true ]; then
+    echo -e "${BOLD}Configurando Claude Code...${NC}"
+
+    if command -v claude &> /dev/null; then
+        claude mcp add --transport http "$MCP_NAME" "$MCP_URL" --header "X-MCP-API-Key: ${API_KEY}"
+        echo -e "${GREEN}  Claude Code configurado.${NC}"
+    else
+        echo -e "${YELLOW}  Claude Code no esta instalado. Omitiendo.${NC}"
+        echo "  Instala primero: https://docs.anthropic.com/en/docs/claude-code"
+    fi
+    echo ""
+fi
+
+# =============================================================
+#  CONFIGURE CURSOR
+# =============================================================
+if [ "$INSTALL_CURSOR" = true ]; then
+    echo -e "${BOLD}Configurando Cursor...${NC}"
+
+    CURSOR_CONFIG_DIR="$HOME/.cursor"
+    CURSOR_CONFIG="$CURSOR_CONFIG_DIR/mcp.json"
+
+    mkdir -p "$CURSOR_CONFIG_DIR"
+
+    node -e "
+const fs = require('fs');
+const configPath = process.argv[1];
+const mcpName = process.argv[2];
+const mcpUrl = process.argv[3];
+const apiKey = process.argv[4];
+
+let config = {};
+try { config = JSON.parse(fs.readFileSync(configPath, 'utf8')); } catch (e) {}
+
+if (!config.mcpServers) config.mcpServers = {};
+
+config.mcpServers[mcpName] = {
+    command: 'npx',
+    args: ['mcp-remote', mcpUrl, '--header', 'X-MCP-API-Key:' + apiKey]
+};
+
+fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+console.log('OK');
+" "$CURSOR_CONFIG" "$MCP_NAME" "$MCP_URL" "$API_KEY"
+
+    echo -e "${GREEN}  Cursor configurado.${NC}"
+    echo -e "  Config: ${CURSOR_CONFIG}"
+    echo ""
+fi
+
+# =============================================================
+#  INSTALL SKILL (for Claude Code users)
+# =============================================================
+if [ "$INSTALL_CLAUDE_CODE" = true ]; then
+    echo -e "${BOLD}Instalando skill de consultas...${NC}"
+
+    SKILL_DIR="$HOME/.claude/skills"
+    mkdir -p "$SKILL_DIR"
+
+    cat > "$SKILL_DIR/prosperas-mcp.md" << 'SKILL_EOF'
 ---
 name: prosperas-mcp
 description: Use when the user wants to query, explore, or get data from the Prosperas database. Triggers on keywords like "consulta", "query", "datos", "base de datos", "tabla", "registros", "leads", "conversiones", "revenue", "MCP", "prosperas-mcp".
@@ -162,15 +319,23 @@ Once you know the server name, these tools are available:
 5. Always present query results in a clear, formatted way (tables when appropriate)
 SKILL_EOF
 
-echo -e "${GREEN}Skill instalada en $SKILL_DIR/prosperas-mcp.md${NC}"
+    echo -e "${GREEN}  Skill instalada en $SKILL_DIR/prosperas-mcp.md${NC}"
+    echo ""
+fi
 
-# --- Done ---
-echo ""
-echo -e "${GREEN}${BOLD}=========================================${NC}"
+# =============================================================
+#  DONE
+# =============================================================
+echo -e "${GREEN}${BOLD}=============================================${NC}"
 echo -e "${GREEN}${BOLD}  Setup completado!${NC}"
-echo -e "${GREEN}${BOLD}=========================================${NC}"
+echo -e "${GREEN}${BOLD}=============================================${NC}"
 echo ""
-echo "  Ahora puedes abrir Claude Code y preguntar:"
+echo "  Herramientas configuradas:"
+[ "$INSTALL_DESKTOP" = true ] && echo -e "    ${GREEN}✓${NC} Claude Desktop ${YELLOW}(reinicia la app)${NC}"
+[ "$INSTALL_CLAUDE_CODE" = true ] && echo -e "    ${GREEN}✓${NC} Claude Code + Skill"
+[ "$INSTALL_CURSOR" = true ] && echo -e "    ${GREEN}✓${NC} Cursor"
+echo ""
+echo "  Ahora puedes preguntar:"
 echo ""
 echo -e "  ${BLUE}\"Muestrame las tablas de la base de datos\"${NC}"
 echo -e "  ${BLUE}\"Cuantos leads hay este mes?\"${NC}"

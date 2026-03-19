@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prosperas MCP — Setup</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 560px;
+            width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .logo p {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: #3b82f6;
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .step-dot.done {
+            background: #22c55e;
+        }
+
+        .step-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-desc {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .option {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .option:hover {
+            border-color: #93c5fd;
+            background: #f0f7ff;
+        }
+
+        .option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-label {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+
+        .option-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9375rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #3b82f6;
+        }
+
+        .input-group input::placeholder {
+            color: #94a3b8;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .input-hint {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.375rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-primary:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            margin-top: 0.5rem;
+        }
+
+        .btn-back:hover {
+            background: #f8fafc;
+        }
+
+        .result-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.875rem 1rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+
+        .result-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-header h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .result-badge {
+            font-size: 0.6875rem;
+            padding: 0.125rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .badge-easy {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-terminal {
+            background: #fef3c7;
+            color: #a16207;
+        }
+
+        .result-body {
+            padding: 1rem;
+        }
+
+        .result-instructions {
+            font-size: 0.8125rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .result-instructions ol {
+            padding-left: 1.25rem;
+        }
+
+        .result-instructions li {
+            margin-bottom: 0.25rem;
+        }
+
+        .code-block {
+            position: relative;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            padding-right: 4.5rem;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            color: #e2e8f0;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 0;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #334155;
+            color: #cbd5e1;
+            border: none;
+            border-radius: 6px;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #475569;
+            color: white;
+        }
+
+        .copy-btn.copied {
+            background: #166534;
+            color: #bbf7d0;
+        }
+
+        .config-summary {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .config-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 8px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+
+        .tool-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .tool-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .tool-option:hover {
+            border-color: #93c5fd;
+            background: #f0f7ff;
+        }
+
+        .tool-option:has(input:checked) {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .tool-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3b82f6;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .tool-info {
+            flex: 1;
+        }
+
+        .tool-name {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+
+        .tool-desc {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.125rem;
+        }
+
+        .restart-reminder {
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.8125rem;
+            color: #a16207;
+            font-weight: 500;
+        }
+
+        .success-banner {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #15803d;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>Prosperas MCP</h1>
+            <p>Conecta tu AI con la base de datos</p>
+        </div>
+
+        <div class="card">
+            <div class="steps">
+                <div class="step-dot active" id="dot-0"></div>
+                <div class="step-dot" id="dot-1"></div>
+                <div class="step-dot" id="dot-2"></div>
+                <div class="step-dot" id="dot-3"></div>
+                <div class="step-dot" id="dot-4"></div>
+            </div>
+
+            <!-- Step 0: Country -->
+            <div class="step-content active" id="step-0">
+                <div class="step-title">Selecciona tu pais</div>
+                <div class="step-desc">Elige el pais de la base de datos que quieres consultar.</div>
+                <div class="options">
+                    <div class="option" onclick="selectCountry('co')" id="opt-co">
+                        <div class="option-icon">&#127464;&#127476;</div>
+                        <div class="option-label">Colombia</div>
+                    </div>
+                    <div class="option" onclick="selectCountry('mx')" id="opt-mx">
+                        <div class="option-icon">&#127474;&#127485;</div>
+                        <div class="option-label">Mexico</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 1.25rem;" id="btn-step0" onclick="nextStep()" disabled>Continuar</button>
+            </div>
+
+            <!-- Step 1: Environment -->
+            <div class="step-content" id="step-1">
+                <div class="step-title">Selecciona el ambiente</div>
+                <div class="step-desc">Produccion es el recomendado. Solo elige Desarrollo si te lo indicaron.</div>
+                <div class="options">
+                    <div class="option selected" onclick="selectEnv('prod')" id="opt-prod">
+                        <div class="option-icon">&#128640;</div>
+                        <div class="option-label">Produccion</div>
+                        <div class="option-sub">Recomendado</div>
+                    </div>
+                    <div class="option" onclick="selectEnv('dev')" id="opt-dev">
+                        <div class="option-icon">&#128736;&#65039;</div>
+                        <div class="option-label">Desarrollo</div>
+                        <div class="option-sub">Solo si te lo indicaron</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 1.25rem;" onclick="nextStep()">Continuar</button>
+                <button class="btn btn-back" onclick="prevStep()">Atras</button>
+            </div>
+
+            <!-- Step 2: API Key -->
+            <div class="step-content" id="step-2">
+                <div class="step-title">Pega tu API Key</div>
+                <div class="step-desc">La obtuviste al generar una llave en el dashboard de Prosperas.</div>
+                <div class="input-group">
+                    <label id="apikey-label" for="apikey">API Key</label>
+                    <input type="text" id="apikey" placeholder="e8d7a43f-342e-48c4-9158-395a0a540cb7" oninput="validateKey()">
+                    <div class="input-hint">Formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</div>
+                </div>
+                <button class="btn btn-primary" id="btn-step2" onclick="nextStep()" disabled>Continuar</button>
+                <button class="btn btn-back" onclick="prevStep()">Atras</button>
+            </div>
+
+            <!-- Step 3: Tool Selection -->
+            <div class="step-content" id="step-3">
+                <div class="step-title">Que herramienta usas?</div>
+                <div class="step-desc">Selecciona donde quieres conectar Prosperas. Puedes elegir varias.</div>
+                <div class="tool-options">
+                    <label class="tool-option" id="tool-desktop">
+                        <input type="checkbox" checked onchange="updateToolSelection()">
+                        <div class="tool-info">
+                            <div class="tool-name">Claude Desktop</div>
+                            <div class="tool-desc">App de escritorio — el mas facil</div>
+                        </div>
+                        <span class="result-badge badge-easy">Recomendado</span>
+                    </label>
+                    <label class="tool-option" id="tool-claude">
+                        <input type="checkbox" onchange="updateToolSelection()">
+                        <div class="tool-info">
+                            <div class="tool-name">Claude Code</div>
+                            <div class="tool-desc">Terminal para desarrolladores</div>
+                        </div>
+                        <span class="result-badge badge-terminal">Terminal</span>
+                    </label>
+                    <label class="tool-option" id="tool-cursor">
+                        <input type="checkbox" onchange="updateToolSelection()">
+                        <div class="tool-info">
+                            <div class="tool-name">Cursor</div>
+                            <div class="tool-desc">Editor de codigo con AI</div>
+                        </div>
+                    </label>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 1.25rem;" id="btn-step3" onclick="generateConfigs()">Configurar</button>
+                <button class="btn btn-back" onclick="prevStep()">Atras</button>
+            </div>
+
+            <!-- Step 4: Results -->
+            <div class="step-content" id="step-4">
+                <div class="success-banner">Configuracion lista</div>
+                <div class="config-summary" id="config-summary"></div>
+
+                <!-- Auto-install command -->
+                <div class="result-card" id="card-auto">
+                    <div class="result-header">
+                        <div class="result-header-left">
+                            <h3>Instalacion automatica</h3>
+                            <span class="result-badge badge-easy">1 comando</span>
+                        </div>
+                    </div>
+                    <div class="result-body">
+                        <div class="result-instructions">
+                            <ol>
+                                <li>Abre <strong>Terminal</strong> (Cmd+Espacio, escribe "Terminal")</li>
+                                <li>Pega el comando de abajo y presiona <strong>Enter</strong></li>
+                                <li>Listo — todo se configura automaticamente</li>
+                            </ol>
+                        </div>
+                        <div class="code-block">
+                            <button class="copy-btn" id="copybtn-auto" onclick="copyCode('auto')">Copiar</button>
+                            <pre id="code-auto"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual fallback: Cursor deep link -->
+                <div class="result-card" id="card-cursor" style="display:none;">
+                    <div class="result-header">
+                        <div class="result-header-left">
+                            <h3>Cursor — instalacion directa</h3>
+                            <span class="result-badge badge-easy">1 click</span>
+                        </div>
+                    </div>
+                    <div class="result-body">
+                        <div class="result-instructions">
+                            <ol>
+                                <li>Haz click en el boton</li>
+                                <li>Cursor se abre con el MCP listo</li>
+                            </ol>
+                        </div>
+                        <button class="btn btn-primary" id="btn-cursor" onclick="openCursor()" style="margin-top: 0.5rem;">
+                            Abrir en Cursor
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reminder for Claude Desktop -->
+                <div id="restart-reminder" class="restart-reminder" style="display:none;">
+                    Recuerda reiniciar Claude Desktop despues de ejecutar el comando.
+                </div>
+
+                <button class="btn btn-back" onclick="resetWizard()">Empezar de nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentStep = 0;
+        var country = '';
+        var env = 'prod';
+        var apiKey = '';
+        var totalSteps = 5;
+
+        var countryMap = {
+            co: { label: 'Colombia', urlCode: 'col', flag: '\u{1F1E8}\u{1F1F4}' },
+            mx: { label: 'Mexico', urlCode: 'mx', flag: '\u{1F1F2}\u{1F1FD}' },
+        };
+
+        var envMap = {
+            prod: { label: 'Produccion' },
+            dev: { label: 'Desarrollo' },
+        };
+
+        function selectCountry(c) {
+            country = c;
+            document.querySelectorAll('#step-0 .option').forEach(function(el) {
+                el.classList.remove('selected');
+            });
+            document.getElementById('opt-' + c).classList.add('selected');
+            document.getElementById('btn-step0').disabled = false;
+        }
+
+        function selectEnv(e) {
+            env = e;
+            document.querySelectorAll('#step-1 .option').forEach(function(el) {
+                el.classList.remove('selected');
+            });
+            document.getElementById('opt-' + e).classList.add('selected');
+        }
+
+        function validateKey() {
+            apiKey = document.getElementById('apikey').value.trim();
+            document.getElementById('btn-step2').disabled = apiKey.length < 10;
+        }
+
+        function getSelectedTools() {
+            var tools = [];
+            var checkboxes = document.querySelectorAll('#step-3 input[type="checkbox"]');
+            var names = ['desktop', 'claude', 'cursor'];
+            checkboxes.forEach(function(cb, i) {
+                if (cb.checked) tools.push(names[i]);
+            });
+            return tools;
+        }
+
+        function updateToolSelection() {
+            var tools = getSelectedTools();
+            document.getElementById('btn-step3').disabled = tools.length === 0;
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step-content').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            document.getElementById('step-' + step).classList.add('active');
+
+            for (var i = 0; i < totalSteps; i++) {
+                var dot = document.getElementById('dot-' + i);
+                dot.classList.remove('active', 'done');
+                if (i < step) dot.classList.add('done');
+                if (i === step) dot.classList.add('active');
+            }
+
+            currentStep = step;
+        }
+
+        function nextStep() {
+            if (currentStep === 1) {
+                var info = countryMap[country];
+                document.getElementById('apikey-label').textContent =
+                    'API Key de ' + info.label + ' - ' + envMap[env].label;
+            }
+            goToStep(currentStep + 1);
+        }
+
+        function prevStep() {
+            goToStep(currentStep - 1);
+        }
+
+        function getMcpName() {
+            return 'prosperas-mcp-' + env + '-' + country;
+        }
+
+        function getMcpUrl() {
+            return 'https://api.' + countryMap[country].urlCode + '.' + env + '.prosperas.com/mcp';
+        }
+
+        function generateConfigs() {
+            var mcpName = getMcpName();
+            var mcpUrl = getMcpUrl();
+            var info = countryMap[country];
+            var tools = getSelectedTools();
+
+            // Summary tags
+            var summary = document.getElementById('config-summary');
+            summary.replaceChildren();
+
+            var tags = [
+                info.flag + ' ' + info.label,
+                envMap[env].label,
+                mcpName,
+            ];
+
+            tags.forEach(function(text) {
+                var tag = document.createElement('span');
+                tag.className = 'config-tag';
+                tag.textContent = text;
+                summary.appendChild(tag);
+            });
+
+            // Build the setup.sh command with pre-filled args
+            var toolsArg = tools.length === 3 ? 'all' : tools.join(',');
+            var setupCmd = 'node setup.js'
+                + ' --country ' + country
+                + ' --env ' + env
+                + ' --key "' + apiKey + '"'
+                + ' --tools ' + toolsArg;
+
+            document.getElementById('code-auto').textContent = setupCmd;
+
+            // Show/hide cursor deep link card
+            var hasCursor = tools.indexOf('cursor') !== -1;
+            document.getElementById('card-cursor').style.display = hasCursor ? 'block' : 'none';
+
+            // Show restart reminder if Desktop selected
+            var hasDesktop = tools.indexOf('desktop') !== -1;
+            document.getElementById('restart-reminder').style.display = hasDesktop ? 'block' : 'none';
+
+            // Store for Cursor deep link
+            window._cursorConfig = {
+                type: 'http',
+                url: mcpUrl,
+                headers: { 'X-MCP-API-Key': apiKey },
+            };
+            window._mcpName = mcpName;
+
+            goToStep(4);
+        }
+
+        function openCursor() {
+            var config = JSON.stringify(window._cursorConfig);
+            var url = 'cursor://anysphere.cursor-deeplink/mcp/install'
+                + '?name=' + encodeURIComponent(window._mcpName)
+                + '&config=' + encodeURIComponent(btoa(config));
+            window.open(url, '_self');
+        }
+
+        function copyCode(type) {
+            var pre = document.getElementById('code-' + type);
+            var btn = document.getElementById('copybtn-' + type);
+            navigator.clipboard.writeText(pre.textContent).then(function() {
+                btn.textContent = 'Copiado!';
+                btn.classList.add('copied');
+                setTimeout(function() {
+                    btn.textContent = 'Copiar';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function resetWizard() {
+            country = '';
+            env = 'prod';
+            apiKey = '';
+            document.getElementById('apikey').value = '';
+            document.querySelectorAll('.option').forEach(function(el) {
+                el.classList.remove('selected');
+            });
+            document.getElementById('opt-prod').classList.add('selected');
+            document.getElementById('btn-step0').disabled = true;
+            document.getElementById('btn-step2').disabled = true;
+            // Reset tool checkboxes
+            var checkboxes = document.querySelectorAll('#step-3 input[type="checkbox"]');
+            checkboxes.forEach(function(cb, i) {
+                cb.checked = i === 0; // Only Desktop checked by default
+            });
+            goToStep(0);
+        }
+    </script>
+</body>
+</html>
