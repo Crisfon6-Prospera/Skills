@@ -19,11 +19,11 @@ Four servers exist, differing only by URL and API key:
 | Server Name | URL Pattern |
 |---|---|
 | `prosperas-mcp-prod-co` | `https://api.col.prod.prosperas.com/mcp` |
-| `prosperas-mcp-prod-mx` | `https://api.mx.prod.prosperas.com/mcp` |
-| `prosperas-mcp-dev-co` | `https://api.col.dev.prosperas.com/mcp` |
-| `prosperas-mcp-dev-mx` | `https://api.mx.dev.prosperas.com/mcp` |
+| `prosperas-mcp-prod-mx` | `https://api.mex.prod.prosperas.com/mcp` |
+| `prosperas-mcp-dev-co` | `https://api-col.dev.prosperas.com/mcp` |
+| `prosperas-mcp-dev-mx` | `https://api-mex.dev.prosperas.com/mcp` |
 
-Country URL subdomain: `col` for Colombia, `mx` for Mexico.
+URL pattern differs between environments: prod uses `api.{country}.prod`, dev uses `api-{country}.dev`.
 
 ## Related Repositories
 

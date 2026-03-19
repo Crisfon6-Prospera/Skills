@@ -57,12 +57,10 @@ fi
 case $COUNTRY_CHOICE in
     1|co)
         COUNTRY="co"
-        COUNTRY_URL="col"
         COUNTRY_LABEL="Colombia"
         ;;
     2|mx)
         COUNTRY="mx"
-        COUNTRY_URL="mx"
         COUNTRY_LABEL="Mexico"
         ;;
     *)
@@ -116,9 +114,17 @@ if [ -z "$API_KEY" ]; then
     exit 1
 fi
 
-# --- Build config ---
+# --- Build config (URLs differ between prod and dev, so we use a lookup) ---
 MCP_NAME="prosperas-mcp-${STAGE}-${COUNTRY}"
-MCP_URL="https://api.${COUNTRY_URL}.${STAGE}.prosperas.com/mcp"
+
+# URL lookup — patterns differ between environments
+declare -A MCP_URLS=(
+    ["prod-co"]="https://api.col.prod.prosperas.com/mcp"
+    ["prod-mx"]="https://api.mex.prod.prosperas.com/mcp"
+    ["dev-co"]="https://api-col.dev.prosperas.com/mcp"
+    ["dev-mx"]="https://api-mex.dev.prosperas.com/mcp"
+)
+MCP_URL="${MCP_URLS[${STAGE}-${COUNTRY}]}"
 
 echo ""
 echo -e "${YELLOW}Configuracion:${NC}"

@@ -148,8 +148,16 @@ function parseArgs() {
 
 // --- Country map ---
 const COUNTRIES = {
-    co: { label: 'Colombia', urlCode: 'col' },
-    mx: { label: 'Mexico', urlCode: 'mx' },
+    co: { label: 'Colombia' },
+    mx: { label: 'Mexico' },
+};
+
+// --- URL map (hardcoded, patterns differ between prod and dev) ---
+const MCP_URLS = {
+    'prod-co': 'https://api.col.prod.prosperas.com/mcp',
+    'prod-mx': 'https://api.mex.prod.prosperas.com/mcp',
+    'dev-co': 'https://api-col.dev.prosperas.com/mcp',
+    'dev-mx': 'https://api-mex.dev.prosperas.com/mcp',
 };
 
 // --- Main ---
@@ -214,7 +222,7 @@ async function main() {
 
     // --- Build config ---
     const mcpName = `prosperas-mcp-${stage}-${country}`;
-    const mcpUrl = `https://api.${COUNTRIES[country].urlCode}.${stage}.prosperas.com/mcp`;
+    const mcpUrl = MCP_URLS[`${stage}-${country}`];
     const stageLabel = stage === 'prod' ? 'Produccion' : 'Desarrollo';
 
     log('');

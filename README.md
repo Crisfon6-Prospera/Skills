@@ -55,9 +55,9 @@ Four servers are available, one per country/environment combination:
 | Server | URL |
 |--------|-----|
 | `prosperas-mcp-prod-co` | `https://api.col.prod.prosperas.com/mcp` |
-| `prosperas-mcp-prod-mx` | `https://api.mx.prod.prosperas.com/mcp` |
-| `prosperas-mcp-dev-co` | `https://api.col.dev.prosperas.com/mcp` |
-| `prosperas-mcp-dev-mx` | `https://api.mx.dev.prosperas.com/mcp` |
+| `prosperas-mcp-prod-mx` | `https://api.mex.prod.prosperas.com/mcp` |
+| `prosperas-mcp-dev-co` | `https://api-col.dev.prosperas.com/mcp` |
+| `prosperas-mcp-dev-mx` | `https://api-mex.dev.prosperas.com/mcp` |
 
 ## Constraints
 

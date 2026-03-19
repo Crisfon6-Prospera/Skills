@@ -590,8 +590,16 @@
         var totalSteps = 5;
 
         var countryMap = {
-            co: { label: 'Colombia', urlCode: 'col', flag: '\u{1F1E8}\u{1F1F4}' },
-            mx: { label: 'Mexico', urlCode: 'mx', flag: '\u{1F1F2}\u{1F1FD}' },
+            co: { label: 'Colombia', flag: '\u{1F1E8}\u{1F1F4}' },
+            mx: { label: 'Mexico', flag: '\u{1F1F2}\u{1F1FD}' },
+        };
+
+        // URLs differ between prod and dev, hardcoded lookup
+        var mcpUrls = {
+            'prod-co': 'https://api.col.prod.prosperas.com/mcp',
+            'prod-mx': 'https://api.mex.prod.prosperas.com/mcp',
+            'dev-co': 'https://api-col.dev.prosperas.com/mcp',
+            'dev-mx': 'https://api-mex.dev.prosperas.com/mcp',
         };
 
         var envMap = {
@@ -670,7 +678,7 @@
         }
 
         function getMcpUrl() {
-            return 'https://api.' + countryMap[country].urlCode + '.' + env + '.prosperas.com/mcp';
+            return mcpUrls[env + '-' + country];
         }
 
         function generateConfigs() {
